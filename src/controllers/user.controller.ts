@@ -3,7 +3,7 @@ import { ApiError } from "../utils/ApiError.ts";
 import { User } from "../models/user.model.ts";
 import { uploadOnCloudinary } from "../utils/cloudinary.ts";
 import { ApiResponse } from "../utils/ApiResponse.ts";
-import { Types } from "mongoose";
+import type { Types } from "mongoose";
 
 const generateAccessAndRefreshTokens = async (
   userId: string | Types.ObjectId
@@ -33,8 +33,7 @@ const generateAccessAndRefreshTokens = async (
 const registerUser = asyncHandler(async (req, res) => {
   const { username, email, fullname, password } = req.body;
 
-  // .1 chcek user email field is empty
-
+  // 1. Check required fields
   if (
     [username, email, fullname, password].some(
       (field) => typeof field !== "string" || field.trim() === ""
@@ -43,17 +42,23 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "All fields are required");
   }
 
-  // .2 check use exists or not
+  const trimmedUsername = username.trim().toLowerCase();
+  const trimmedEmail = email.trim().toLowerCase();
+  const trimmedFullname = fullname.trim();
 
-  const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+  // 2. Check if user already exists
+  const existingUser = await User.findOne({
+    $or: [{ username: trimmedUsername }, { email: trimmedEmail }],
+  });
 
   if (existingUser) {
     throw new ApiError(409, "User already exists");
   }
 
-  // .3
+  // 3. Handle file uploads
   const files = req.files as
-    { [fieldname: string]: Express.Multer.File[] | undefined } | undefined;
+    | { [fieldname: string]: Express.Multer.File[] | undefined }
+    | undefined;
 
   const avatarLocalPath = files?.avatar?.[0]?.path;
 
@@ -75,11 +80,11 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Failed to upload avatar");
   }
 
-  // .4 user registered
+  // 4. Create user
   const user = await User.create({
-    username: username.toLowerCase(),
-    email,
-    fullname,
+    username: trimmedUsername,
+    email: trimmedEmail,
+    fullname: trimmedFullname,
     password,
     avatar: avatar.url,
     coverImage: coverImage?.url || "",
@@ -92,6 +97,7 @@ const registerUser = asyncHandler(async (req, res) => {
   if (!createdUser) {
     throw new ApiError(500, "Failed to create user");
   }
+
   return res
     .status(201)
     .json(new ApiResponse(201, createdUser, "User registered successfully"));
@@ -100,36 +106,51 @@ const registerUser = asyncHandler(async (req, res) => {
 const loginUser = asyncHandler(async (req, res) => {
   const { username, email, password } = req.body;
 
-  // .1 chcek user email field is empty
-  if (!username && !email) {
+  // 1. Check identifier and password
+  if (
+    (!username || typeof username !== "string" || username.trim() === "") &&
+    (!email || typeof email !== "string" || email.trim() === "")
+  ) {
     throw new ApiError(400, "username or email is required");
   }
 
-  // .2 check use exists or not
-  const user = await User.findOne({ $or: [{ username }, { email }] });
+  if (!password || typeof password !== "string") {
+    throw new ApiError(400, "password is required");
+  }
+
+  // 2. Find user by username or email
+  const conditions: Array<{ username: string } | { email: string }> = [];
+  if (username && typeof username === "string" && username.trim() !== "") {
+    conditions.push({ username: username.trim().toLowerCase() });
+  }
+  if (email && typeof email === "string" && email.trim() !== "") {
+    conditions.push({ email: email.trim().toLowerCase() });
+  }
+
+  const user = await User.findOne({ $or: conditions });
 
   if (!user) {
     throw new ApiError(404, "User does not exist");
   }
 
-  // .3 password check exists or not
+  // 3. Verify password
   const isPasswordCorrect = await user.isPasswordCorrect(password);
 
   if (!isPasswordCorrect) {
-    throw new ApiError(401, "Invalid user cradentials");
+    throw new ApiError(401, "Invalid user credentials");
   }
 
-  // .4 generate token
+  // 4. Generate tokens
   const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
     user._id
   );
 
-  // .5 fetch fresh user without sensitive fields
+  // 5. Fetch fresh user without sensitive fields
   const loggedInUser = await User.findById(user._id).select(
     "-password -refreshToken"
   );
 
-  // .6 cookie options
+  // 6. Set cookies and send response
   const options = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -149,6 +170,10 @@ const loginUser = asyncHandler(async (req, res) => {
 });
 
 const logoutUser = asyncHandler(async (req, res) => {
+  if (!req.user?._id) {
+    throw new ApiError(401, "Unauthorized request");
+  }
+
   await User.findByIdAndUpdate(
     req.user._id,
     {
@@ -168,4 +193,5 @@ const logoutUser = asyncHandler(async (req, res) => {
     .clearCookie("refreshToken", options)
     .json(new ApiResponse(200, {}, "User logged out successfully"));
 });
+
 export { registerUser, loginUser, logoutUser };
