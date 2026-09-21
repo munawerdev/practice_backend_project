@@ -1,11 +1,17 @@
-import express from "express";
-const app = express()
-const port = 3000
+import dotenv from "dotenv";
+import connectDB from "./db/index.ts";
+import { app } from "./app.ts";
 
-app.get('/hello', (req, res) => {
-  res.send('Hello World!')
-})
-
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
+dotenv.config({
+  path: "./.env"
+});
+connectDB()
+  .then(() => {
+    console.log("Connected to MongoDB");
+    app.listen(process.env.PORT || 8000, () => {
+      console.log(`Server is running on port ${process.env.PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.error("Error connecting to MongoDB", error);
+  });
