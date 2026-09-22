@@ -11,11 +11,10 @@ const videoSchema = new Schema(
     views: { type: Number, default: 0 },
     isPublished: { type: Boolean, default: true },
     owner: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    // videoUrl: { type: String, required: true },
-    // likes: { type: Number, default: 0 },
-    // comments: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
+
 videoSchema.plugin(mongooseAggregatePaginate);
+
 export const Video = mongoose.model("Video", videoSchema);

@@ -1,12 +1,7 @@
-import { ApiError } from "../utils/ApiError.ts";
-import { asyncHandler } from "../utils/asyncHandler.ts";
-import jwt, { type JwtPayload } from "jsonwebtoken";
-import { User } from "../models/user.model.ts";
-
-interface DecodedToken extends JwtPayload {
-  _id?: string;
-  id?: string;
-}
+import { ApiError } from "../utils/ApiError.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
+import jwt from "jsonwebtoken";
+import { User } from "../models/user.model.js";
 
 export const verifyJWT = asyncHandler(async (req, _, next) => {
   try {
@@ -24,7 +19,7 @@ export const verifyJWT = asyncHandler(async (req, _, next) => {
       throw new ApiError(500, "ACCESS_TOKEN_SECRET is not configured");
     }
 
-    const decodedToken = jwt.verify(token, secret) as DecodedToken;
+    const decodedToken = jwt.verify(token, secret);
 
     const userId = decodedToken?._id || decodedToken?.id;
     if (!userId) {
@@ -39,7 +34,7 @@ export const verifyJWT = asyncHandler(async (req, _, next) => {
 
     req.user = user;
     next();
-  } catch (error: any) {
+  } catch (error) {
     if (error instanceof ApiError) {
       throw error;
     }

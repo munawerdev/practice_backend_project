@@ -1,29 +1,8 @@
-import { Schema, model, type Model, type Types } from "mongoose";
+import { Schema, model } from "mongoose";
 import bcrypt from "bcrypt";
-import jwt, { type SignOptions } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 
-export interface IUser {
-  username: string;
-  email: string;
-  fullname: string;
-  avatar: string;
-  coverImage?: string;
-  watchHistory: Types.ObjectId[];
-  password: string;
-  refreshToken?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
-export interface IUserMethods {
-  isPasswordCorrect(password: string): Promise<boolean>;
-  generateAccessToken(): string;
-  generateRefreshToken(): string;
-}
-
-export type UserModel = Model<IUser, {}, IUserMethods>;
-
-const userSchema = new Schema<IUser, UserModel, IUserMethods>(
+const userSchema = new Schema(
   {
     username: {
       type: String,
@@ -60,13 +39,11 @@ userSchema.pre("save", async function () {
   this.password = await bcrypt.hash(this.password, 10);
 });
 
-userSchema.methods.isPasswordCorrect = async function (
-  password: string
-): Promise<boolean> {
+userSchema.methods.isPasswordCorrect = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
 
-userSchema.methods.generateAccessToken = function (): string {
+userSchema.methods.generateAccessToken = function () {
   const secret = process.env.ACCESS_TOKEN_SECRET;
   if (!secret) {
     throw new Error("ACCESS_TOKEN_SECRET is not defined");
@@ -82,13 +59,12 @@ userSchema.methods.generateAccessToken = function (): string {
     },
     secret,
     {
-      expiresIn: (process.env.ACCESS_TOKEN_EXPIRY ||
-        "1d") as SignOptions["expiresIn"],
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRY || "1d",
     }
   );
 };
 
-userSchema.methods.generateRefreshToken = function (): string {
+userSchema.methods.generateRefreshToken = function () {
   const secret = process.env.REFRESH_TOKEN_SECRET;
   if (!secret) {
     throw new Error("REFRESH_TOKEN_SECRET is not defined");
@@ -101,10 +77,9 @@ userSchema.methods.generateRefreshToken = function (): string {
     },
     secret,
     {
-      expiresIn: (process.env.REFRESH_TOKEN_EXPIRY ||
-        "10d") as SignOptions["expiresIn"],
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRY || "10d",
     }
   );
 };
 
-export const User = model<IUser, UserModel>("User", userSchema);
+export const User = model("User", userSchema);

@@ -2,16 +2,16 @@
   "name": "practice_backend_project",
   "version": "1.0.0",
   "description": "Bun + Express + Mongoose backend practice project",
-  "module": "src/index.ts",
-  "main": "src/index.ts",
+  "module": "src/index.js",
+  "main": "src/index.js",
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "bun --watch src/index.ts",
-    "build": "bun build src/index.ts --outdir dist --target=bun --minify",
+    "dev": "bun --watch src/index.js",
+    "build": "bun build src/index.js --outdir dist --target=bun --minify",
     "start": "NODE_ENV=production bun run dist/index.js",
-    "start:prod": "NODE_ENV=production bun run src/index.ts",
-    "lint": "bunx tsc --noEmit",
+    "start:prod": "NODE_ENV=production bun run src/index.js",
+    "lint": "bunx prettier --check .",
     "test": "bun test",
     "format": "bunx prettier --write ."
   },
@@ -26,22 +26,11 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.10.1",
     "mongoose-aggregate-paginate-v2": "^1.1.5",
+    "morgan": "^1.12.1",
     "multer": "^2.4.0"
   },
   "devDependencies": {
-    "@types/bcrypt": "^6.0.0",
-    "@types/bun": "latest",
-    "@types/cookie-parser": "^1.4.10",
-    "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.6",
-    "@types/jsonwebtoken": "^9.0.10",
-    "@types/multer": "^2.2.0",
-    "@types/node": "^26.6.2",
-    "@types/morgan": "^1.9.10",
     "prettier": "^3.9.8"
-  },
-  "peerDependencies": {
-    "typescript": "^7.0.2"
   },
   "engines": {
     "bun": ">=1.4.2"

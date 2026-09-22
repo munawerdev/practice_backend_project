@@ -1,4 +1,4 @@
-import { v2 as cloudinary, type UploadApiResponse } from "cloudinary";
+import { v2 as cloudinary } from "cloudinary";
 import dotenv from "dotenv";
 import fs from "fs";
 
@@ -13,9 +13,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const uploadOnCloudinary = async (
-  localFilePath: string
-): Promise<UploadApiResponse | null> => {
+const uploadOnCloudinary = async (localFilePath) => {
   try {
     if (!localFilePath) return null;
     const uploadResult = await cloudinary.uploader.upload(localFilePath, {

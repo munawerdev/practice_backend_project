@@ -3,7 +3,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import morgan from "morgan";
 
-// import { errorHandler } from "./middlewares/error.middleware.ts";
+// import { errorHandler } from "./middlewares/error.middleware.js";
 const app = express();
 
 app.use(morgan("dev"));
@@ -20,7 +20,7 @@ app.use(express.static("public"));
 app.use(cookieParser());
 
 //routes import
-import userRoutes from "./routes/user.routes.ts";
+import userRoutes from "./routes/user.routes.js";
 
 //routes declaration
 app.use("/api/v1/users", userRoutes);

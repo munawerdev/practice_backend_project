@@ -1,19 +1,11 @@
-import { asyncHandler } from "../utils/asyncHandler.ts";
-import { ApiError } from "../utils/ApiError.ts";
-import { User } from "../models/user.model.ts";
-import { uploadOnCloudinary } from "../utils/cloudinary.ts";
-import { ApiResponse } from "../utils/ApiResponse.ts";
-import type { Types } from "mongoose";
-import jwt, { type JwtPayload } from "jsonwebtoken";
+import { asyncHandler } from "../utils/asyncHandler.js";
+import { ApiError } from "../utils/ApiError.js";
+import { User } from "../models/user.model.js";
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
+import jwt from "jsonwebtoken";
 
-interface DecodedToken extends JwtPayload {
-  _id?: string;
-  id?: string;
-}
-
-const generateAccessAndRefreshTokens = async (
-  userId: string | Types.ObjectId
-) => {
+const generateAccessAndRefreshTokens = async (userId) => {
   const user = await User.findById(userId);
 
   if (!user) {
@@ -28,7 +20,7 @@ const generateAccessAndRefreshTokens = async (
     await user.save({ validateBeforeSave: false });
 
     return { accessToken, refreshToken };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error generating tokens:", error);
     throw new ApiError(
       500,
@@ -64,14 +56,15 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   // 3. Handle file uploads
-  const files = req.files as
-    { [fieldname: string]: Express.Multer.File[] | undefined } | undefined;
+  const avatarLocalPath = req.files?.avatar?.[0]?.path;
 
-  const avatarLocalPath = files?.avatar?.[0]?.path;
-
-  let coverImageLocalPath: string | undefined;
-  if (files && Array.isArray(files.coverImage) && files.coverImage.length > 0) {
-    coverImageLocalPath = files.coverImage[0]?.path;
+  let coverImageLocalPath;
+  if (
+    req.files &&
+    Array.isArray(req.files.coverImage) &&
+    req.files.coverImage.length > 0
+  ) {
+    coverImageLocalPath = req.files.coverImage[0]?.path;
   }
 
   if (!avatarLocalPath) {
@@ -126,7 +119,7 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 
   // 2. Find user by username or email
-  const conditions: Array<{ username: string } | { email: string }> = [];
+  const conditions = [];
   if (username && typeof username === "string" && username.trim() !== "") {
     conditions.push({ username: username.trim().toLowerCase() });
   }
@@ -215,10 +208,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       throw new ApiError(500, "REFRESH_TOKEN_SECRET is not configured");
     }
 
-    const decodedToken = jwt.verify(
-      incomingRefreshToken,
-      secret
-    ) as DecodedToken;
+    const decodedToken = jwt.verify(incomingRefreshToken, secret);
 
     const userId = decodedToken?._id || decodedToken?.id;
 
@@ -255,7 +245,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
           "Access token refreshed"
         )
       );
-  } catch (error: any) {
+  } catch (error) {
     if (error instanceof ApiError) {
       throw error;
     }
