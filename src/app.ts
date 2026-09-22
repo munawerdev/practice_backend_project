@@ -1,9 +1,13 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import morgan from "morgan";
 
 // import { errorHandler } from "./middlewares/error.middleware.ts";
 const app = express();
+
+app.use(morgan("dev"));
+
 app.use(
   cors({
     origin: process.env.CORS_ORIGIN,
