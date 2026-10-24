@@ -1,5 +1,5 @@
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 
 const test = async (req: Request, res: Response): Promise<void> => {
   const responseData = { message: "API is working!" };
