@@ -1,6 +1,6 @@
-import mongoose from "mongoose";
-import { DB_NAME } from "../constants.js";
 import express from "express";
+import mongoose from "mongoose";
+import { DB_NAME } from "../constants.ts";
 
 const app = express();
 

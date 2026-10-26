@@ -1,10 +1,10 @@
-import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import express from "express";
 import morgan from "morgan";
 import userRoutes from "./routes/user.routes.js";
 
-import testRoutes from "./routes/test.route.ts";
+import testRoutes from "./routes/test.route.js";
 
 const app = express();
 

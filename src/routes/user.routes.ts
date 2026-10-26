@@ -1,17 +1,17 @@
 import { Router } from "express";
 import {
-  loginUser,
-  logoutUser,
-  registerUser,
-  refreshAccessToken,
   changeCurrentPassword,
   getCurrentUser,
+  loginUser,
+  logoutUser,
+  refreshAccessToken,
+  registerUser,
+  updateAccountDetails,
   updateUserAvatar,
   updateUserCoverImage,
-  updateAccountDetails
-} from "../controllers/user.controller.js";
-import { upload } from "../middlewares/multer.middleware.js";
+} from "../controllers/user.controller.ts";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { upload } from "../middlewares/multer.middleware.ts";
 
 const router = Router();
 
